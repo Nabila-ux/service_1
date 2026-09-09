@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard - Runner USM</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 p-4 md:p-8">
+
+  <!-- PIN Protection Modal -->
+  <div id="pinModal" class="fixed inset-0 bg-slate-900 bg-opacity-80 flex items-center justify-center p-4">
+    <div class="bg-white p-6 rounded-2xl max-w-xs w-full text-center">
+      <h2 class="font-bold text-slate-800 mb-2">Masukkan PIN Admin</h2>
+      <input type="password" id="adminPin" class="w-full text-center text-xl p-2 border rounded-xl mb-4" placeholder="••••">
+      <button onclick="checkPin()" class="w-full py-2 bg-violet-600 text-white font-bold rounded-xl">Buka Dashboard</button>
+    </div>
+  </div>
+
+  <div class="max-w-4xl mx-auto hidden" id="adminContent">
+    <div class="flex justify-between items-center mb-6">
+      <div>
+        <h1 class="text-2xl font-black text-slate-800">Senarai Tempahan Runner 📋</h1>
+        <p class="text-xs text-slate-500">Data live adik-adik USM</p>
+      </div>
+      <button onclick="location.reload()" class="bg-violet-600 text-white px-4 py-2 rounded-xl text-xs font-bold">Refresh 🔄</button>
+    </div>
+
+    <!-- Booking Table -->
+    <div class="bg-white rounded-2xl shadow overflow-x-auto">
+      <table class="w-full text-left text-sm">
+        <thead class="bg-slate-50 border-b text-xs text-slate-400 uppercase">
+          <tr>
+            <th class="p-4">Nama</th>
+            <th class="p-4">No. Tel</th>
+            <th class="p-4">Pick-up</th>
+            <th class="p-4">Destinasi</th>
+            <th class="p-4">Slot</th>
+            <th class="p-4">Tambang</th>
+            <th class="p-4">WhatsApp</th>
+          </tr>
+        </thead>
+        <tbody id="bookingList">
+          <!-- Data Firestore Dimasukkan Di Sini -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT.appspot.com",
+      messagingSenderId: "XXXX",
+      appId: "XXXX"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // PIN Rahsia Admin (Boleh ubah '1234' kepada PIN pilihan anda)
+    window.checkPin = function() {
+      const pin = document.getElementById('adminPin').value;
+      if (pin === "1234") {
+        document.getElementById('pinModal').classList.add('hidden');
+        document.getElementById('adminContent').classList.remove('hidden');
+        loadData();
+      } else {
+        alert("PIN Salah!");
+      }
+    };
+
+    function loadData() {
+      const q = query(collection(db, "bookings"), orderBy("createdAt", "desc"));
+      onSnapshot(q, (snapshot) => {
+        const tbody = document.getElementById('bookingList');
+        tbody.innerHTML = '';
+
+        snapshot.forEach((doc) => {
+          const d = doc.data();
+          const cleanPhone = d.phone.replace(/[^0-9]/g, '');
+          const waLink = `https://wa.me/6${cleanPhone}?text=Hai%20${d.name},%20saya%20runner%20USM%20nak%20confirmkan%20booking%20slot%20${d.slot}`;
+
+          tbody.innerHTML += `
+            <tr class="border-b hover:bg-slate-50">
+              <td class="p-4 font-bold text-slate-800">${d.name}</td>
+              <td class="p-4 text-slate-500">${d.phone}</td>
+              <td class="p-4 text-xs font-semibold">${d.pickup}</td>
+              <td class="p-4 font-bold text-violet-600">${d.destination}</td>
+              <td class="p-4 font-bold text-amber-600">${d.slot}</td>
+              <td class="p-4 font-bold text-emerald-600">${d.fare}</td>
+              <td class="p-4">
+                <a href="${waLink}" target="_blank" class="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold inline-block">
+                  Chat 💬
+                </a>
+              </td>
+            </tr>
+          `;
+        });
+      });
+    }
+  </script>
+</body>
+</html>

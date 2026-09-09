@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>USM Student Runner 🚗</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
+  <style> body { font-family: 'Plus Jakarta Sans', sans-serif; } </style>
+</head>
+<body class="bg-violet-100 min-h-screen flex items-center justify-center p-3">
+
+  <div class="bg-white max-w-md w-full rounded-3xl shadow-xl border-2 border-violet-200 overflow-hidden">
+    
+    <!-- Banner Header -->
+    <div class="bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 p-6 text-white text-center">
+      <span class="bg-amber-300 text-slate-900 text-[11px] font-black tracking-wider px-3 py-1 rounded-full uppercase inline-block mb-2 shadow">
+        Diskaun Pelajar USM ⚡
+      </span>
+      <h1 class="text-2xl font-extrabold tracking-tight">Student Runner & Cab 🚗💨</h1>
+      <p class="text-violet-200 text-xs mt-1">Tak payah sewa Grab mahal-mahal, biar abang/akak tolong!</p>
+    </div>
+
+    <!-- Booking Form -->
+    <form id="bookingForm" class="p-6 space-y-4">
+      
+      <!-- Nama -->
+      <div>
+        <label class="text-xs font-bold uppercase text-slate-500">Nama Panggilan</label>
+        <input type="text" id="name" required placeholder="cth: Danish / Sarah"
+          class="w-full mt-1 p-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-violet-500 outline-none text-sm transition" />
+      </div>
+
+      <!-- No Phone -->
+      <div>
+        <label class="text-xs font-bold uppercase text-slate-500">No. WhatsApp</label>
+        <input type="tel" id="phone" required placeholder="cth: 0134567890"
+          class="w-full mt-1 p-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-violet-500 outline-none text-sm transition" />
+      </div>
+
+      <!-- Pickup Location -->
+      <div>
+        <label class="text-xs font-bold uppercase text-slate-500">Lokasi Pick-up (Ambil)</label>
+        <select id="pickup" onchange="calculatePrice()" class="w-full mt-1 p-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-violet-500 outline-none text-sm font-semibold transition">
+          <option value="kampus">🏫 Kampus Utama (Aman/Bakti/Indah dll)</option>
+          <option value="rst">🏡 RST (Desasiswa Restu/Saujana/Tekun)</option>
+        </select>
+      </div>
+
+      <!-- Destination Selection -->
+      <div>
+        <label class="text-xs font-bold uppercase text-slate-500">Destinasi / Kirim Barang</label>
+        <div class="grid grid-cols-2 gap-2 mt-1">
+          <label class="cursor-pointer">
+            <input type="radio" name="dest" value="diy" checked onchange="calculatePrice()" class="peer sr-only">
+            <div class="p-3 text-center text-xs font-bold border-2 border-slate-100 rounded-2xl peer-checked:bg-violet-600 peer-checked:text-white peer-checked:border-violet-600 transition shadow-sm">
+              🔨 MR.DIY Sg Dua
+            </div>
+          </label>
+          <label class="cursor-pointer">
+            <input type="radio" name="dest" value="mydin" onchange="calculatePrice()" class="peer sr-only">
+            <div class="p-3 text-center text-xs font-bold border-2 border-slate-100 rounded-2xl peer-checked:bg-violet-600 peer-checked:text-white peer-checked:border-violet-600 transition shadow-sm">
+              🛍️ Mydin BJ
+            </div>
+          </label>
+          <label class="cursor-pointer">
+            <input type="radio" name="dest" value="eco" onchange="calculatePrice()" class="peer sr-only">
+            <div class="p-3 text-center text-xs font-bold border-2 border-slate-100 rounded-2xl peer-checked:bg-violet-600 peer-checked:text-white peer-checked:border-violet-600 transition shadow-sm">
+              🟢 Eco-Shop RM2.40
+            </div>
+          </label>
+          <label class="cursor-pointer">
+            <input type="radio" name="dest" value="lotus" onchange="calculatePrice()" class="peer sr-only">
+            <div class="p-3 text-center text-xs font-bold border-2 border-slate-100 rounded-2xl peer-checked:bg-violet-600 peer-checked:text-white peer-checked:border-violet-600 transition shadow-sm">
+              🛒 Lotus's Sg Dua
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Time Window Slot -->
+      <div>
+        <label class="text-xs font-bold uppercase text-slate-500">Window Time</label>
+        <div class="grid grid-cols-2 gap-2 mt-1">
+          <label class="cursor-pointer">
+            <input type="radio" name="slot" value="5:00 PM" checked class="peer sr-only">
+            <div class="p-3 text-center text-xs font-extrabold border-2 border-slate-100 rounded-2xl peer-checked:bg-amber-400 peer-checked:border-amber-400 peer-checked:text-slate-900 transition">
+              ☀️ 5:00 PM (Petang)
+            </div>
+          </label>
+          <label class="cursor-pointer">
+            <input type="radio" name="slot" value="8:00 PM" class="peer sr-only">
+            <div class="p-3 text-center text-xs font-extrabold border-2 border-slate-100 rounded-2xl peer-checked:bg-amber-400 peer-checked:border-amber-400 peer-checked:text-slate-900 transition">
+              🌙 8:00 PM (Malam)
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Live Estimated Price Box -->
+      <div class="bg-violet-50 p-4 rounded-2xl flex justify-between items-center border border-violet-200">
+        <div>
+          <span class="text-slate-500 text-xs block">Tambang Diskaun:</span>
+          <span class="text-xs text-slate-400">Jimat RM1 - RM2</span>
+        </div>
+        <span id="priceTag" class="text-2xl font-black text-violet-700">RM 4.00</span>
+      </div>
+
+      <!-- Submit Button -->
+      <button type="submit" id="submitBtn" class="w-full py-4 bg-violet-600 hover:bg-violet-700 active:scale-[0.98] text-white font-extrabold rounded-2xl shadow-lg shadow-violet-300 transition duration-150">
+        Book Slot Sekarang 🚀
+      </button>
+    </form>
+  </div>
+
+  <!-- Firebase Scripts -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    // GANTIKAN DENGAN CONFIG FIREBASE PROJEK ANDA
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT.appspot.com",
+      messagingSenderId: "XXXX",
+      appId: "XXXX"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Dynamic Price Logic
+    window.calculatePrice = function() {
+      const pickup = document.getElementById('pickup').value;
+      const dest = document.querySelector('input[name="dest"]:checked').value;
+      let price = 4;
+
+      if (dest === 'diy' || dest === 'lotus') {
+        price = (pickup === 'rst') ? 5 : 4;
+      } else if (dest === 'mydin' || dest === 'eco') {
+        price = (pickup === 'rst') ? 6 : 5;
+      }
+
+      document.getElementById('priceTag').innerText = `RM ${price}.00`;
+      return price;
+    };
+
+    // Submit Booking ke Firestore
+    document.getElementById('bookingForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('submitBtn');
+      btn.innerText = "Sila tunggu... ⏳";
+      btn.disabled = true;
+
+      const name = document.getElementById('name').value;
+      const phone = document.getElementById('phone').value;
+      const pickup = document.getElementById('pickup').selectedOptions[0].text;
+      const dest = document.querySelector('input[name="dest"]:checked').value;
+      const slot = document.querySelector('input[name="slot"]:checked').value;
+      const fare = calculatePrice();
+
+      try {
+        await addDoc(collection(db, "bookings"), {
+          name,
+          phone,
+          pickup,
+          destination: dest.toUpperCase(),
+          slot,
+          fare: `RM ${fare}`,
+          status: "Pending",
+          createdAt: serverTimestamp()
+        });
+
+        alert("Booking Berjaya! Runner akan roger anda di WhatsApp sebentar lagi 👍");
+        document.getElementById('bookingForm').reset();
+        calculatePrice();
+      } catch (err) {
+        alert("Ralat menghantar tempahan. Sila cuba lagi.");
+        console.error(err);
+      } finally {
+        btn.innerText = "Book Slot Sekarang 🚀";
+        btn.disabled = false;
+      }
+    });
+
+    calculatePrice();
+  </script>
+</body>
+</html>
