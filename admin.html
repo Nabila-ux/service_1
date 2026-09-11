@@ -2,67 +2,107 @@
 <html lang="ms">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard - Runner USM</title>
   <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-slate-100 p-4 md:p-8">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
+  
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
-  <!-- PIN Protection Modal -->
-  <div id="pinModal" class="fixed inset-0 bg-slate-900 bg-opacity-80 flex items-center justify-center p-4">
-    <div class="bg-white p-6 rounded-2xl max-w-xs w-full text-center">
-      <h2 class="font-bold text-slate-800 mb-2">Masukkan PIN Admin</h2>
-      <input type="password" id="adminPin" class="w-full text-center text-xl p-2 border rounded-xl mb-4" placeholder="••••">
-      <button onclick="checkPin()" class="w-full py-2 bg-violet-600 text-white font-bold rounded-xl">Buka Dashboard</button>
+  <style> body { font-family: 'Plus Jakarta Sans', sans-serif; } </style>
+</head>
+<body class="bg-slate-100 p-3 md:p-8 min-h-screen">
+
+  <!-- PIN Modal -->
+  <div id="pinModal" class="fixed inset-0 bg-slate-900 bg-opacity-80 flex items-center justify-center p-4 z-50">
+    <div class="bg-white p-6 rounded-3xl max-w-xs w-full text-center shadow-2xl">
+      <h2 class="font-extrabold text-slate-800 text-lg mb-1">PIN Admin Sis 🔒</h2>
+      <p class="text-xs text-slate-400 mb-4">Masukkan kod rahsia untuk akses</p>
+      <input type="password" id="adminPin" class="w-full text-center text-xl p-3 border-2 border-pink-200 rounded-2xl mb-4 focus:ring-2 focus:ring-pink-400 outline-none" placeholder="••••">
+      <button onclick="checkPin()" class="w-full py-3 bg-pink-500 hover:bg-pink-600 text-white font-bold rounded-2xl transition shadow-lg shadow-pink-200">
+        Buka Dashboard
+      </button>
     </div>
   </div>
 
-  <div class="max-w-4xl mx-auto hidden" id="adminContent">
-    <div class="flex justify-between items-center mb-6">
+  <!-- Main Content -->
+  <div class="max-w-6xl mx-auto hidden" id="adminContent">
+    
+    <!-- Top Header -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 bg-white p-5 rounded-3xl shadow-sm border border-slate-200">
       <div>
-        <h1 class="text-2xl font-black text-slate-800">Senarai Tempahan Runner 📋</h1>
-        <p class="text-xs text-slate-500">Data live adik-adik USM</p>
+        <h1 class="text-xl md:text-2xl font-black text-slate-800 flex items-center gap-2">
+          Tempahan Sis Runner USM 🚗💨
+        </h1>
+        <p class="text-xs font-semibold text-emerald-600 flex items-center gap-1.5 mt-1" id="statusText">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          Live Database: Bersambung
+        </p>
       </div>
-      <button onclick="location.reload()" class="bg-violet-600 text-white px-4 py-2 rounded-xl text-xs font-bold">Refresh 🔄</button>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center gap-2 w-full sm:w-auto">
+        <!-- Google Sheets Download Button -->
+        <button onclick="exportToGSheet()" class="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-2xl text-xs font-extrabold shadow-sm transition active:scale-95">
+          <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H6v-2h3v2zm0-4H6v-2h3v2zm0-4H6V7h3v2zm5 8h-3v-2h3v2zm0-4h-3v-2h3v2zm0-4h-3V7h3v2zm5 8h-3v-2h3v2zm0-4h-3v-2h3v2zm0-4h-3V7h3v2z"/>
+          </svg>
+          Export G-Sheets
+        </button>
+
+        <!-- Refresh Button -->
+        <button onclick="location.reload()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2.5 rounded-2xl text-xs font-bold transition">
+          🔄 Refresh
+        </button>
+      </div>
     </div>
 
     <!-- Booking Table -->
-    <div class="bg-white rounded-2xl shadow overflow-x-auto">
-      <table class="w-full text-left text-sm">
-        <thead class="bg-slate-50 border-b text-xs text-slate-400 uppercase">
-          <tr>
-            <th class="p-4">Nama</th>
-            <th class="p-4">No. Tel</th>
-            <th class="p-4">Pick-up</th>
-            <th class="p-4">Destinasi</th>
-            <th class="p-4">Slot</th>
-            <th class="p-4">Tambang</th>
-            <th class="p-4">WhatsApp</th>
-          </tr>
-        </thead>
-        <tbody id="bookingList">
-          <!-- Data Firestore Dimasukkan Di Sini -->
-        </tbody>
-      </table>
+    <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead class="bg-slate-50 border-b border-slate-100 text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">
+            <tr>
+              <th class="p-4">Nama Pelajar</th>
+              <th class="p-4">No. WhatsApp</th>
+              <th class="p-4">Lokasi Pick-up</th>
+              <th class="p-4">Destinasi</th>
+              <th class="p-4">Slot Masa</th>
+              <th class="p-4">Tambang</th>
+              <th class="p-4 min-w-[220px]">Tindakan & Status Take Up</th>
+            </tr>
+          </thead>
+          <tbody id="bookingList" class="divide-y divide-slate-100">
+            <tr>
+              <td colspan="7" class="p-8 text-center text-slate-400 font-medium text-xs">
+                Sedang memuatkan data... ⏳
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
+  <script>
+    // Config Firebase Anda
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT.firebaseapp.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT.appspot.com",
-      messagingSenderId: "XXXX",
-      appId: "XXXX"
+      apiKey: "AIzaSyASwPzf_3NND5f4NbIHC6llEIMnRiSOz_s",
+      authDomain: "usm-runner-cab.firebaseapp.com",
+      projectId: "usm-runner-cab",
+      storageBucket: "usm-runner-cab.firebasestorage.app",
+      messagingSenderId: "611460068015"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.firestore();
 
-    // PIN Rahsia Admin (Boleh ubah '1234' kepada PIN pilihan anda)
+    let allBookings = [];
+
+    // Semak PIN (1234)
     window.checkPin = function() {
       const pin = document.getElementById('adminPin').value;
       if (pin === "1234") {
@@ -70,39 +110,164 @@
         document.getElementById('adminContent').classList.remove('hidden');
         loadData();
       } else {
-        alert("PIN Salah!");
+        alert("PIN Salah! Sila cuba lagi.");
       }
     };
 
+    // Muat data masa nyata (Live)
     function loadData() {
-      const q = query(collection(db, "bookings"), orderBy("createdAt", "desc"));
-      onSnapshot(q, (snapshot) => {
+      db.collection("bookings").orderBy("createdAt", "desc").onSnapshot((snapshot) => {
         const tbody = document.getElementById('bookingList');
         tbody.innerHTML = '';
+        allBookings = [];
+
+        if (snapshot.empty) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="7" class="p-12 text-center text-slate-400 font-semibold text-xs">
+                Belum ada tempahan baharu. Bila adik-adik isi borang, ia akan terus terpapar di sini! ✨
+              </td>
+            </tr>`;
+          return;
+        }
 
         snapshot.forEach((doc) => {
           const d = doc.data();
-          const cleanPhone = d.phone.replace(/[^0-9]/g, '');
-          const waLink = `https://wa.me/6${cleanPhone}?text=Hai%20${d.name},%20saya%20runner%20USM%20nak%20confirmkan%20booking%20slot%20${d.slot}`;
+          allBookings.push({ id: doc.id, ...d });
+
+          const cleanPhone = (d.phone || '').replace(/[^0-9]/g, '');
+          const waLink = `https://wa.me/6${cleanPhone}?text=Hai%20${encodeURIComponent(d.name || '')},%20akak%20runner%20USM%20nak%20confirmkan%20booking%20slot%20${encodeURIComponent(d.slot || '')}`;
+          
+          const isTaken = d.isTaken === true;
+          const takenNotes = d.takenNotes || '';
 
           tbody.innerHTML += `
-            <tr class="border-b hover:bg-slate-50">
-              <td class="p-4 font-bold text-slate-800">${d.name}</td>
-              <td class="p-4 text-slate-500">${d.phone}</td>
-              <td class="p-4 text-xs font-semibold">${d.pickup}</td>
-              <td class="p-4 font-bold text-violet-600">${d.destination}</td>
-              <td class="p-4 font-bold text-amber-600">${d.slot}</td>
-              <td class="p-4 font-bold text-emerald-600">${d.fare}</td>
+            <tr class="transition ${isTaken ? 'bg-emerald-50/40 hover:bg-emerald-50/70' : 'hover:bg-pink-50/40'}">
+              <td class="p-4 font-extrabold text-slate-800">
+                ${d.name || '-'}
+                ${isTaken ? '<span class="ml-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">Taken</span>' : ''}
+              </td>
+              <td class="p-4 text-slate-500 font-medium">${d.phone || '-'}</td>
+              <td class="p-4 text-xs font-semibold text-slate-700">${d.pickup || '-'}</td>
+              <td class="p-4 font-bold text-pink-600 text-xs">${d.destination || '-'}</td>
+              <td class="p-4 font-black text-amber-600 text-xs">${d.slot || '-'}</td>
+              <td class="p-4 font-black text-emerald-600">${d.fare || '-'}</td>
+              
+              <!-- Kolum Tindakan & Notes Take Up -->
               <td class="p-4">
-                <a href="${waLink}" target="_blank" class="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold inline-block">
-                  Chat 💬
-                </a>
+                <div class="flex flex-col gap-2">
+                  
+                  <!-- 1. Manual Checkbox: Tick jika dah ditake up -->
+                  <label class="flex items-center gap-2 cursor-pointer select-none bg-white p-2 rounded-xl border ${isTaken ? 'border-emerald-300 bg-emerald-50/50' : 'border-slate-200 hover:border-pink-300'} shadow-sm transition">
+                    <input type="checkbox" 
+                           onchange="toggleTaken('${doc.id}', this.checked)" 
+                           ${isTaken ? 'checked' : ''} 
+                           class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 accent-emerald-600 cursor-pointer">
+                    <span class="text-xs font-bold ${isTaken ? 'text-emerald-700' : 'text-slate-500'}">
+                      ${isTaken ? '✅ Dah di-take up' : '⏳ Belum di-take up'}
+                    </span>
+                  </label>
+
+                  <!-- 2. Ruang Nota (Nama Akak / Status sementara PIC belum fixed) -->
+                  <input type="text" 
+                         placeholder="Nota: Siapa ambil / OTW..." 
+                         value="${takenNotes.replace(/"/g, '&quot;')}" 
+                         onchange="updateNotes('${doc.id}', this.value)"
+                         class="text-xs px-3 py-1.5 border border-slate-200 rounded-xl bg-white focus:ring-2 focus:ring-pink-300 outline-none placeholder:text-slate-400 font-medium shadow-sm transition">
+
+                  <!-- 3. Butang Tindakan (Chat WhatsApp & Padam) -->
+                  <div class="flex items-center gap-1.5 mt-0.5">
+                    <a href="${waLink}" target="_blank" class="flex-1 text-center bg-emerald-500 hover:bg-emerald-600 text-white px-2.5 py-1.5 rounded-xl text-xs font-bold inline-flex items-center justify-center gap-1 shadow-sm transition active:scale-95">
+                      Chat 💬
+                    </a>
+                    <button onclick="deleteBooking('${doc.id}', '${(d.name || '').replace(/'/g, "\\'")}')" class="bg-rose-100 hover:bg-rose-200 text-rose-600 p-1.5 rounded-xl text-xs font-bold transition active:scale-95" title="Padam Tempahan">
+                      🗑️
+                    </button>
+                  </div>
+
+                </div>
               </td>
             </tr>
           `;
         });
+      }, (err) => {
+        document.getElementById('statusText').innerText = "Ralat: " + err.message;
+        document.getElementById('statusText').className = "text-xs font-semibold text-rose-600";
       });
     }
+
+    // Fungsi Kemaskini Tick "Dah Take Up" ke Firestore
+    window.toggleTaken = async function(id, isChecked) {
+      try {
+        await db.collection("bookings").doc(id).update({
+          isTaken: isChecked,
+          takenUpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      } catch (error) {
+        alert("Gagal mengemaskini status: " + error.message);
+      }
+    };
+
+    // Fungsi Simpan Nota / Nama PIC ke Firestore
+    window.updateNotes = async function(id, noteText) {
+      try {
+        await db.collection("bookings").doc(id).update({
+          takenNotes: noteText.trim()
+        });
+      } catch (error) {
+        alert("Gagal menyimpan nota: " + error.message);
+      }
+    };
+
+    // Fungsi Padam Rekod dari Firestore
+    window.deleteBooking = async function(id, name) {
+      if (confirm(`Sis pasti nak padam tempahan daripada "${name}"?`)) {
+        try {
+          await db.collection("bookings").doc(id).delete();
+        } catch (error) {
+          alert("Gagal padam: " + error.message);
+        }
+      }
+    };
+
+    // Fungsi Muat Turun ke Google Sheets (CSV Format) Termasuk Kolum Status & Nota
+    window.exportToGSheet = function() {
+      if (allBookings.length === 0) {
+        alert("Tiada rekod tempahan untuk dimuat turun.");
+        return;
+      }
+
+      // Tajuk Kolum Google Sheets (Ditambah Status & Nota)
+      let csvContent = "Nama,No Telefon,Lokasi Pick-up,Destinasi,Slot Masa,Tambang,Status Take Up,Nota / PIC\n";
+
+      // Baris Data
+      allBookings.forEach(d => {
+        const row = [
+          `"${(d.name || '').replace(/"/g, '""')}"`,
+          `"${(d.phone || '').replace(/"/g, '""')}"`,
+          `"${(d.pickup || '').replace(/"/g, '""')}"`,
+          `"${(d.destination || '').replace(/"/g, '""')}"`,
+          `"${(d.slot || '').replace(/"/g, '""')}"`,
+          `"${(d.fare || '').replace(/"/g, '""')}"`,
+          `"${d.isTaken ? 'Dah Take Up' : 'Belum Take Up'}"`,
+          `"${(d.takenNotes || '').replace(/"/g, '""')}"`
+        ];
+        csvContent += row.join(",") + "\n";
+      });
+
+      const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const downloadAnchor = document.createElement("a");
+      
+      const tarikhHariIni = new Date().toISOString().slice(0, 10);
+      downloadAnchor.href = url;
+      downloadAnchor.download = `Tempahan_Runner_USM_${tarikhHariIni}.csv`;
+      
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      document.body.removeChild(downloadAnchor);
+      URL.revokeObjectURL(url);
+    };
   </script>
 </body>
 </html>

@@ -6,26 +6,31 @@
   <title>USM Student Runner 🚗💨 (Girls Only)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
+  
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
   <style> body { font-family: 'Plus Jakarta Sans', sans-serif; } </style>
 </head>
 <body class="bg-pink-50 min-h-screen flex items-center justify-center p-3">
 
-  <div class="bg-white max-w-md w-full rounded-3xl shadow-xl border-2 border-pink-200 overflow-hidden">
+  <div class="bg-white max-w-md w-full rounded-3xl shadow-xl border-2 border-pink-200 overflow-hidden relative">
     
-    <!-- 🌸 Banner Header Baharu -->
+    <!-- Banner Header -->
     <div class="bg-gradient-to-r from-pink-500 via-purple-500 to-violet-600 p-6 text-white text-center">
       <span class="bg-white text-pink-600 text-[11px] font-black tracking-wider px-3 py-1 rounded-full uppercase inline-block mb-2 shadow">
         🌸 For Girls Only (Sis USM) 🌸
       </span>
-      <!-- PERUBAHAN 3: Tajuk Baharu -->
       <h1 class="text-xl md:text-2xl font-extrabold tracking-tight">Student Runner & Cab 🚗💨 (for girls only)</h1>
-      <!-- PERUBAHAN 2: Tagline Baharu -->
       <p class="text-pink-100 text-xs mt-1 font-medium">Tak payah sewa Grab mahal-mahal, biar akak tolong! ✨</p>
     </div>
 
     <!-- Booking Form -->
     <form id="bookingForm" class="p-6 space-y-4">
       
+      <!-- Status Box -->
+      <div id="statusBox" class="hidden p-3 rounded-xl text-xs font-bold text-center"></div>
+
       <!-- Nama -->
       <div>
         <label class="text-xs font-bold uppercase text-slate-500">Nama Panggilan</label>
@@ -40,12 +45,10 @@
           class="w-full mt-1 p-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-pink-400 outline-none text-sm transition" />
       </div>
 
-      <!-- PERUBAHAN 1: Lokasi Pickup (Select Dropdown + Detail Text) -->
+      <!-- Lokasi Pickup -->
       <div class="space-y-2">
         <label class="text-xs font-bold uppercase text-slate-500">Lokasi Pick-up</label>
-        
-        <!-- Pilihan Kawasan (Kira Harga) -->
-        <select id="pickupArea" onchange="calculatePrice()" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-pink-400 outline-none text-sm font-semibold transition">
+        <select id="pickupArea" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-pink-400 outline-none text-sm font-semibold transition">
           <optgroup label="🏡 Kawasan RST (Luar Kampus)">
             <option value="rst">Desasiswa Restu</option>
             <option value="rst">Desasiswa Saujana</option>
@@ -61,36 +64,34 @@
             <option value="kampus">Lain-lain Kawasan Kampus</option>
           </optgroup>
         </select>
-
-        <!-- Kotak Detail Pick-up -->
-        <input type="text" id="pickupDetail" required placeholder="Detail tempat: cth: Foyer Blok B, Bilik 204, Pondok Guard"
-          class="w-full p-3 bg-slate-50 border border-pink-100 rounded-2xl focus:ring-2 focus:ring-pink-400 outline-none text-xs transition placeholder-slate-400" />
+        <input type="text" id="pickupDetail" required placeholder="Detail tempat: cth: Foyer Blok B, Bilik 204"
+          class="w-full p-3 bg-slate-50 border border-pink-100 rounded-2xl focus:ring-2 focus:ring-pink-400 outline-none text-xs transition" />
       </div>
 
-      <!-- Destinasi / Kirim Barang -->
+      <!-- Destinasi -->
       <div>
-        <label class="text-xs font-bold uppercase text-slate-500">Destinasi / Nak Beli Barang Kat Mana?</label>
+        <label class="text-xs font-bold uppercase text-slate-500">Destinasi</label>
         <div class="grid grid-cols-2 gap-2 mt-1">
           <label class="cursor-pointer">
-            <input type="radio" name="dest" value="diy" checked onchange="calculatePrice()" class="peer sr-only">
+            <input type="radio" name="dest" value="MR.DIY Sg Dua" checked class="peer sr-only">
             <div class="p-3 text-center text-xs font-bold border-2 border-slate-100 rounded-2xl peer-checked:bg-pink-500 peer-checked:text-white peer-checked:border-pink-500 transition shadow-sm">
               🔨 MR.DIY Sg Dua
             </div>
           </label>
           <label class="cursor-pointer">
-            <input type="radio" name="dest" value="mydin" onchange="calculatePrice()" class="peer sr-only">
+            <input type="radio" name="dest" value="Mydin BJ" class="peer sr-only">
             <div class="p-3 text-center text-xs font-bold border-2 border-slate-100 rounded-2xl peer-checked:bg-pink-500 peer-checked:text-white peer-checked:border-pink-500 transition shadow-sm">
               🛍️ Mydin BJ
             </div>
           </label>
           <label class="cursor-pointer">
-            <input type="radio" name="dest" value="eco" onchange="calculatePrice()" class="peer sr-only">
+            <input type="radio" name="dest" value="Eco-Shop RM2.40" class="peer sr-only">
             <div class="p-3 text-center text-xs font-bold border-2 border-slate-100 rounded-2xl peer-checked:bg-pink-500 peer-checked:text-white peer-checked:border-pink-500 transition shadow-sm">
               🟢 Eco-Shop RM2.40
             </div>
           </label>
           <label class="cursor-pointer">
-            <input type="radio" name="dest" value="lotus" onchange="calculatePrice()" class="peer sr-only">
+            <input type="radio" name="dest" value="Lotus's Sg Dua" class="peer sr-only">
             <div class="p-3 text-center text-xs font-bold border-2 border-slate-100 rounded-2xl peer-checked:bg-pink-500 peer-checked:text-white peer-checked:border-pink-500 transition shadow-sm">
               🛒 Lotus's Sg Dua
             </div>
@@ -98,20 +99,20 @@
         </div>
       </div>
 
-      <!-- Window Time Slot -->
+      <!-- Slot Masa -->
       <div>
-        <label class="text-xs font-bold uppercase text-slate-500">Pilih Slot Masa Runner</label>
+        <label class="text-xs font-bold uppercase text-slate-500">Pilih Slot Masa</label>
         <div class="grid grid-cols-2 gap-2 mt-1">
           <label class="cursor-pointer">
             <input type="radio" name="slot" value="5:00 PM" checked class="peer sr-only">
             <div class="p-3 text-center text-xs font-extrabold border-2 border-slate-100 rounded-2xl peer-checked:bg-amber-300 peer-checked:border-amber-300 peer-checked:text-slate-900 transition">
-              ☀️ 5:00 PM (Petang)
+              ☀️ 5:00 PM
             </div>
           </label>
           <label class="cursor-pointer">
             <input type="radio" name="slot" value="8:00 PM" class="peer sr-only">
             <div class="p-3 text-center text-xs font-extrabold border-2 border-slate-100 rounded-2xl peer-checked:bg-amber-300 peer-checked:border-amber-300 peer-checked:text-slate-900 transition">
-              🌙 8:00 PM (Malam)
+              🌙 8:00 PM
             </div>
           </label>
         </div>
@@ -127,88 +128,98 @@
       </div>
 
       <!-- Submit Button -->
-      <button type="submit" id="submitBtn" class="w-full py-4 bg-pink-500 hover:bg-pink-600 active:scale-[0.98] text-white font-extrabold rounded-2xl shadow-lg shadow-pink-200 transition duration-150">
-        Book Slot Sekarang Sis! 💖
+      <button type="submit" id="submitBtn" class="w-full py-4 bg-pink-500 hover:bg-pink-600 active:scale-[0.98] text-white font-extrabold rounded-2xl shadow-lg shadow-pink-200 transition">
+        Hantar Tempahan ke WhatsApp 💬
       </button>
     </form>
   </div>
 
-  <!-- Firebase Scripts -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  <script>
+    // ✅ NOMBOR WHATSAPP ANDA YANG SEBENAR
+    const MY_PHONE = "601123701040";
 
-    // ⚠️ GANTIKAN DENGAN CONFIG FIREBASE PROJEK ANDA
+  
+    // ⚠️ CONFIG FIREBASE ANDA
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT.firebaseapp.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT.appspot.com",
-      messagingSenderId: "XXXX",
-      appId: "XXXX"
+      apiKey: "AIzaSyASwPzf_3NND5f4NbIHC61lEIMnRiSOz_s",
+      authDomain: "usm-runner-cab.firebaseapp.com",
+      projectId: "usm-runner-cab",
+      storageBucket: "usm-runner-cab.firebasestorage.app",
+      messagingSenderId: "611460068015",
+      appId: "1:611460068015:web:4295ab4950a63a8950da5a"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.firestore();
 
-    // Dynamic Price Logic
-    window.calculatePrice = function() {
-      const pickupArea = document.getElementById('pickupArea').value;
+    const priceTag = document.getElementById('priceTag');
+    const pickupArea = document.getElementById('pickupArea');
+    const form = document.getElementById('bookingForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const statusBox = document.getElementById('statusBox');
+
+    function calculatePrice() {
+      const area = pickupArea.value;
       const dest = document.querySelector('input[name="dest"]:checked').value;
-      let price = 4;
-
-      if (dest === 'diy' || dest === 'lotus') {
-        price = (pickupArea === 'rst') ? 5 : 4;
-      } else if (dest === 'mydin' || dest === 'eco') {
-        price = (pickupArea === 'rst') ? 6 : 5;
-      }
-
-      document.getElementById('priceTag').innerText = `RM ${price}.00`;
+      let price = (dest.includes('DIY') || dest.includes('Lotus')) 
+        ? (area === 'rst' ? 5 : 4) 
+        : (area === 'rst' ? 6 : 5);
+      priceTag.innerText = `RM ${price}.00`;
       return price;
-    };
+    }
 
-    // Submit Booking
-    document.getElementById('bookingForm').addEventListener('submit', async (e) => {
+    pickupArea.addEventListener('change', calculatePrice);
+    document.querySelectorAll('input[name="dest"]').forEach(el => el.addEventListener('change', calculatePrice));
+
+    // SUBMIT & DIRECT WHATSAPP REDIRECT
+    form.addEventListener('submit', async function(e) {
       e.preventDefault();
-      const btn = document.getElementById('submitBtn');
-      btn.innerText = "Sila tunggu sekejap ya... ⏳";
-      btn.disabled = true;
+
+      submitBtn.innerText = "Memproses Tempahan... ⏳";
+      submitBtn.disabled = true;
 
       const name = document.getElementById('name').value;
       const phone = document.getElementById('phone').value;
-      const pickupSelected = document.getElementById('pickupArea').selectedOptions[0].text;
-      const pickupDetail = document.getElementById('pickupDetail').value;
-      const fullPickup = `${pickupSelected} (${pickupDetail})`;
-      
+      const pickupPlace = `${pickupArea.selectedOptions[0].text} - ${document.getElementById('pickupDetail').value}`;
       const dest = document.querySelector('input[name="dest"]:checked').value;
       const slot = document.querySelector('input[name="slot"]:checked').value;
       const fare = calculatePrice();
 
+      // Format mesej WhatsApp
+      const msg = `Hai Sis Runner USM! 🌸%0A%0ASaya nak book servis cab/runner:%0A👤 *Nama:* ${name}%0A📱 *No Tel:* ${phone}%0A📍 *Pick-up:* ${pickupPlace}%0A🛍️ *Destinasi:* ${dest}%0A⏰ *Slot Masa:* ${slot}%0A💰 *Tambang:* RM ${fare}`;
+      const waURL = `https://wa.me/${MY_PHONE}?text=${msg}`;
+
+      // 1. Simpan ke Firestore
       try {
-        await addDoc(collection(db, "bookings"), {
-          name,
-          phone,
-          pickup: fullPickup,
-          destination: dest.toUpperCase(),
-          slot,
+        await db.collection("bookings").add({
+          name: name,
+          phone: phone,
+          pickup: pickupPlace,
+          destination: dest,
+          slot: slot,
           fare: `RM ${fare}`,
           status: "Pending",
-          createdAt: serverTimestamp()
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
-
-        alert("Booking Berjaya Sis! Akak akan roger melalui WhatsApp sebentar lagi ya 🌸");
-        document.getElementById('bookingForm').reset();
-        calculatePrice();
+        console.log("Data berjaya masuk ke Firestore!");
       } catch (err) {
-        alert("Ralat! Pastikan anda sambungkan Firestore database.");
-        console.error(err);
-      } finally {
-        btn.innerText = "Book Slot Sekarang Sis! 💖";
-        btn.disabled = false;
+        console.error("Firestore error:", err);
       }
+
+      // 2. Terus buka WhatsApp tanpa butang kedua
+      statusBox.className = "p-3 rounded-xl text-xs font-bold text-center bg-emerald-100 text-emerald-800 block mb-2";
+      statusBox.innerHTML = "Tempahan Diterima! Sedang membuka WhatsApp anda...";
+
+      setTimeout(() => {
+        window.location.href = waURL;
+      }, 700);
     });
 
     calculatePrice();
   </script>
 </body>
 </html>
+
+    
