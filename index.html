@@ -99,6 +99,13 @@
         </div>
       </div>
 
+      <!-- ⭐ TARIKH PICK-UP / SERVIS (BARU DITAMBAH) ⭐ -->
+      <div>
+        <label class="text-xs font-bold uppercase text-slate-500">Tarikh Pick-up / Servis</label>
+        <input type="date" id="pickupDate" required
+          class="w-full mt-1 p-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-pink-400 outline-none text-sm font-semibold text-slate-700 transition" />
+      </div>
+
       <!-- Slot Masa -->
       <div>
         <label class="text-xs font-bold uppercase text-slate-500">Pilih Slot Masa</label>
@@ -138,10 +145,9 @@
     // ✅ NOMBOR WHATSAPP ANDA YANG SEBENAR
     const MY_PHONE = "601123701040";
 
-  
     // ⚠️ CONFIG FIREBASE ANDA
     const firebaseConfig = {
-      apiKey: "AIzaSyASwPzf_3NND5f4NbIHC61lEIMnRiSOz_s",
+      apiKey: "AIzaSyASwPzf_3NND5f4NbIHC6llEIMnRiSOz_s",
       authDomain: "usm-runner-cab.firebaseapp.com",
       projectId: "usm-runner-cab",
       storageBucket: "usm-runner-cab.firebasestorage.app",
@@ -159,6 +165,12 @@
     const form = document.getElementById('bookingForm');
     const submitBtn = document.getElementById('submitBtn');
     const statusBox = document.getElementById('statusBox');
+    const dateInput = document.getElementById('pickupDate');
+
+    // Setkan nilai default tarikh kepada hari ini & sekat tarikh lepas
+    const today = new Date().toISOString().split('T')[0];
+    dateInput.min = today;
+    dateInput.value = today;
 
     function calculatePrice() {
       const area = pickupArea.value;
@@ -182,24 +194,34 @@
 
       const name = document.getElementById('name').value;
       const phone = document.getElementById('phone').value;
+      const rawDate = dateInput.value; // cth: 2026-09-12
+      
+      // Tukar format tarikh kepada format mudah dibaca (DD/MM/YYYY)
+      const [year, month, day] = rawDate.split('-');
+      const formattedDate = `${day}/${month}/${year}`;
+
       const pickupPlace = `${pickupArea.selectedOptions[0].text} - ${document.getElementById('pickupDetail').value}`;
       const dest = document.querySelector('input[name="dest"]:checked').value;
       const slot = document.querySelector('input[name="slot"]:checked').value;
       const fare = calculatePrice();
 
-      // Format mesej WhatsApp
-      const msg = `Hai Sis Runner USM! 🌸%0A%0ASaya nak book servis cab/runner:%0A👤 *Nama:* ${name}%0A📱 *No Tel:* ${phone}%0A📍 *Pick-up:* ${pickupPlace}%0A🛍️ *Destinasi:* ${dest}%0A⏰ *Slot Masa:* ${slot}%0A💰 *Tambang:* RM ${fare}`;
+      // Format mesej WhatsApp (Ditambah baris Tarikh)
+      const msg = `Hai Sis Runner USM! 🌸%0A%0ASaya nak book servis cab/runner:%0A👤 *Nama:* ${encodeURIComponent(name)}%0A📱 *No Tel:* ${encodeURIComponent(phone)}%0A📅 *Tarikh Pick-up:* ${encodeURIComponent(formattedDate)}%0A📍 *Pick-up:* ${encodeURIComponent(pickupPlace)}%0A🛍️ *Destinasi:* ${encodeURIComponent(dest)}%0A⏰ *Slot Masa:* ${encodeURIComponent(slot)}%0A💰 *Tambang:* RM ${fare}`;
       const waURL = `https://wa.me/${MY_PHONE}?text=${msg}`;
 
-      // 1. Simpan ke Firestore
+      // 1. Simpan ke Firestore (Termasuk field 'date')
       try {
         await db.collection("bookings").add({
           name: name,
           phone: phone,
+          date: formattedDate,
+          rawDate: rawDate,
           pickup: pickupPlace,
           destination: dest,
           slot: slot,
           fare: `RM ${fare}`,
+          isTaken: false,
+          takenNotes: "",
           status: "Pending",
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
@@ -208,7 +230,7 @@
         console.error("Firestore error:", err);
       }
 
-      // 2. Terus buka WhatsApp tanpa butang kedua
+      // 2. Terus buka WhatsApp
       statusBox.className = "p-3 rounded-xl text-xs font-bold text-center bg-emerald-100 text-emerald-800 block mb-2";
       statusBox.innerHTML = "Tempahan Diterima! Sedang membuka WhatsApp anda...";
 
@@ -221,5 +243,3 @@
   </script>
 </body>
 </html>
-
-    
