@@ -68,38 +68,49 @@
           class="w-full p-3 bg-slate-50 border border-pink-100 rounded-2xl focus:ring-2 focus:ring-pink-400 outline-none text-xs transition" />
       </div>
 
-      <!-- Destinasi -->
+      <!-- Destinasi & Harga Baharu -->
       <div>
         <label class="text-xs font-bold uppercase text-slate-500">Destinasi</label>
         <div class="grid grid-cols-2 gap-2 mt-1">
-          <label class="cursor-pointer">
-            <input type="radio" name="dest" value="MR.DIY Sg Dua" checked class="peer sr-only">
-            <div class="p-3 text-center text-xs font-bold border-2 border-slate-100 rounded-2xl peer-checked:bg-pink-500 peer-checked:text-white peer-checked:border-pink-500 transition shadow-sm">
-              🔨 MR.DIY Sg Dua
-            </div>
-          </label>
-          <label class="cursor-pointer">
-            <input type="radio" name="dest" value="Mydin BJ" class="peer sr-only">
-            <div class="p-3 text-center text-xs font-bold border-2 border-slate-100 rounded-2xl peer-checked:bg-pink-500 peer-checked:text-white peer-checked:border-pink-500 transition shadow-sm">
-              🛍️ Mydin BJ
-            </div>
-          </label>
-          <label class="cursor-pointer">
-            <input type="radio" name="dest" value="Eco-Shop RM2.40" class="peer sr-only">
-            <div class="p-3 text-center text-xs font-bold border-2 border-slate-100 rounded-2xl peer-checked:bg-pink-500 peer-checked:text-white peer-checked:border-pink-500 transition shadow-sm">
-              🟢 Eco-Shop RM2.40
-            </div>
-          </label>
+          <!-- Lotus's (RM 1) -->
           <label class="cursor-pointer">
             <input type="radio" name="dest" value="Lotus's Sg Dua" class="peer sr-only">
-            <div class="p-3 text-center text-xs font-bold border-2 border-slate-100 rounded-2xl peer-checked:bg-pink-500 peer-checked:text-white peer-checked:border-pink-500 transition shadow-sm">
-              🛒 Lotus's Sg Dua
+            <div class="p-3 text-center border-2 border-slate-100 rounded-2xl peer-checked:bg-pink-500 peer-checked:text-white peer-checked:border-pink-500 transition shadow-sm">
+              <div class="text-xs font-bold">🛒 Lotus's Sg Dua</div>
+              <div class="text-[10px] font-extrabold opacity-90 mt-0.5">RM 1.00</div>
+            </div>
+          </label>
+
+          <!-- MR.DIY (RM 2) -->
+          <label class="cursor-pointer">
+            <input type="radio" name="dest" value="MR.DIY Sg Dua" checked class="peer sr-only">
+            <div class="p-3 text-center border-2 border-slate-100 rounded-2xl peer-checked:bg-pink-500 peer-checked:text-white peer-checked:border-pink-500 transition shadow-sm">
+              <div class="text-xs font-bold">🔨 MR.DIY Sg Dua</div>
+              <div class="text-[10px] font-extrabold opacity-90 mt-0.5">RM 2.00</div>
+            </div>
+          </label>
+
+          <!-- Mydin BJ (RM 2) -->
+          <label class="cursor-pointer">
+            <input type="radio" name="dest" value="Mydin BJ" class="peer sr-only">
+            <div class="p-3 text-center border-2 border-slate-100 rounded-2xl peer-checked:bg-pink-500 peer-checked:text-white peer-checked:border-pink-500 transition shadow-sm">
+              <div class="text-xs font-bold">🛍️ Mydin BJ</div>
+              <div class="text-[10px] font-extrabold opacity-90 mt-0.5">RM 2.00</div>
+            </div>
+          </label>
+
+          <!-- Eco-Shop (RM 3) -->
+          <label class="cursor-pointer">
+            <input type="radio" name="dest" value="Eco-Shop RM2.40" class="peer sr-only">
+            <div class="p-3 text-center border-2 border-slate-100 rounded-2xl peer-checked:bg-pink-500 peer-checked:text-white peer-checked:border-pink-500 transition shadow-sm">
+              <div class="text-xs font-bold">🟢 Eco-Shop RM2.40</div>
+              <div class="text-[10px] font-extrabold opacity-90 mt-0.5">RM 3.00</div>
             </div>
           </label>
         </div>
       </div>
 
-      <!-- ⭐ TARIKH PICK-UP / SERVIS (BARU DITAMBAH) ⭐ -->
+      <!-- Tarikh Pick-up / Servis -->
       <div>
         <label class="text-xs font-bold uppercase text-slate-500">Tarikh Pick-up / Servis</label>
         <input type="date" id="pickupDate" required
@@ -129,9 +140,9 @@
       <div class="bg-pink-50 p-4 rounded-2xl flex justify-between items-center border border-pink-200">
         <div>
           <span class="text-slate-500 text-xs block">Tambang Jimat Sis:</span>
-          <span class="text-[11px] text-pink-600 font-semibold">Jimat RM1 - RM2 ikut jarak ✨</span>
+          <span class="text-[11px] text-pink-600 font-semibold">Kadar murah & mesra poket sis USM ✨</span>
         </div>
-        <span id="priceTag" class="text-2xl font-black text-pink-600">RM 4.00</span>
+        <span id="priceTag" class="text-2xl font-black text-pink-600">RM 2.00</span>
       </div>
 
       <!-- Submit Button -->
@@ -161,28 +172,35 @@
     const db = firebase.firestore();
 
     const priceTag = document.getElementById('priceTag');
-    const pickupArea = document.getElementById('pickupArea');
     const form = document.getElementById('bookingForm');
     const submitBtn = document.getElementById('submitBtn');
     const statusBox = document.getElementById('statusBox');
     const dateInput = document.getElementById('pickupDate');
 
-    // Setkan nilai default tarikh kepada hari ini & sekat tarikh lepas
+    // Tetapkan tarikh minimum kepada hari ini
     const today = new Date().toISOString().split('T')[0];
     dateInput.min = today;
     dateInput.value = today;
 
+    // KIRAAN TAMBANG BAHARU:
+    // Lotus = RM 1, DIY = RM 2, Mydin = RM 2, Eco-Shop = RM 3
     function calculatePrice() {
-      const area = pickupArea.value;
       const dest = document.querySelector('input[name="dest"]:checked').value;
-      let price = (dest.includes('DIY') || dest.includes('Lotus')) 
-        ? (area === 'rst' ? 5 : 4) 
-        : (area === 'rst' ? 6 : 5);
+      let price = 2;
+
+      if (dest.includes("Lotus")) {
+        price = 1;
+      } else if (dest.includes("DIY") || dest.includes("Mydin")) {
+        price = 2;
+      } else if (dest.includes("Eco")) {
+        price = 3;
+      }
+
       priceTag.innerText = `RM ${price}.00`;
       return price;
     }
 
-    pickupArea.addEventListener('change', calculatePrice);
+    // Kemaskini harga setiap kali adik menukar pilihan destinasi
     document.querySelectorAll('input[name="dest"]').forEach(el => el.addEventListener('change', calculatePrice));
 
     // SUBMIT & DIRECT WHATSAPP REDIRECT
@@ -194,22 +212,22 @@
 
       const name = document.getElementById('name').value;
       const phone = document.getElementById('phone').value;
-      const rawDate = dateInput.value; // cth: 2026-09-12
+      const rawDate = dateInput.value;
       
-      // Tukar format tarikh kepada format mudah dibaca (DD/MM/YYYY)
+      // Format tarikh DD/MM/YYYY
       const [year, month, day] = rawDate.split('-');
       const formattedDate = `${day}/${month}/${year}`;
 
-      const pickupPlace = `${pickupArea.selectedOptions[0].text} - ${document.getElementById('pickupDetail').value}`;
+      const pickupPlace = `${document.getElementById('pickupArea').selectedOptions[0].text} - ${document.getElementById('pickupDetail').value}`;
       const dest = document.querySelector('input[name="dest"]:checked').value;
       const slot = document.querySelector('input[name="slot"]:checked').value;
       const fare = calculatePrice();
 
-      // Format mesej WhatsApp (Ditambah baris Tarikh)
+      // Mesej WhatsApp
       const msg = `Hai Sis Runner USM! 🌸%0A%0ASaya nak book servis cab/runner:%0A👤 *Nama:* ${encodeURIComponent(name)}%0A📱 *No Tel:* ${encodeURIComponent(phone)}%0A📅 *Tarikh Pick-up:* ${encodeURIComponent(formattedDate)}%0A📍 *Pick-up:* ${encodeURIComponent(pickupPlace)}%0A🛍️ *Destinasi:* ${encodeURIComponent(dest)}%0A⏰ *Slot Masa:* ${encodeURIComponent(slot)}%0A💰 *Tambang:* RM ${fare}`;
       const waURL = `https://wa.me/${MY_PHONE}?text=${msg}`;
 
-      // 1. Simpan ke Firestore (Termasuk field 'date')
+      // 1. Simpan ke Firestore
       try {
         await db.collection("bookings").add({
           name: name,
@@ -219,7 +237,7 @@
           pickup: pickupPlace,
           destination: dest,
           slot: slot,
-          fare: `RM ${fare}`,
+          fare: `RM ${fare}.00`,
           isTaken: false,
           takenNotes: "",
           status: "Pending",
@@ -239,6 +257,7 @@
       }, 700);
     });
 
+    // Panggil sekali sewaktu mula buka halaman
     calculatePrice();
   </script>
 </body>
